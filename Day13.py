@@ -60,6 +60,14 @@ def collided(i, carts):
     return False
 
 
+def remove_collided(i, carts):
+    for j in range(len(carts)):
+        if i != j:
+            if carts[i][0] == carts[j][0] and carts[i][1] == carts[j][1]:
+                carts[i][1] = -10
+                carts[j][1] = -10
+
+
 def simulate(carts, tracks):
     while True:
         carts.sort(key=lambda c: (c[1], c[0]))
@@ -69,7 +77,22 @@ def simulate(carts, tracks):
                 return carts[i][0], carts[i][1]
 
 
+def simulate_last(carts, tracks):
+    carts.sort(key=lambda c: (c[1], c[0]))
+    while True:
+        for i in range(len(carts)):
+            move_cart(i, carts, tracks)
+            remove_collided(i, carts)
+        carts.sort(key=lambda c: (c[1], c[0]))
+        if carts[0][1] < 0:
+            carts = carts[2:]
+        if len(carts) < 2:
+            return carts[0][0], carts[0][1]
+
+
 def run():
     data = load_data("Day13.txt").split("\n")
     carts, tracks = interpret(data)
     print(f"The first crash happens at {simulate(carts, tracks)}")
+    carts, tracks = interpret(data)
+    print(f"The last cart is at {simulate_last(carts, tracks)}")
