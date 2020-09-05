@@ -90,13 +90,33 @@ class Cave:
         else:  # hurt, not kill
             weak_targets[0].hp -= actor.ap
 
+    # returns a set of all squares that are next to enemies
+    def get_set_of_empty_squares_next_to_enemies(self, actor):
+        enemy = "G" if actor.type == "E" else "E"
+        squares = set()
+        for m in self.mobs:
+            if m.hp and m.type == enemy:
+                for r, c in ((-1, 0), (0, -1), (0, 1), (1, 0)):
+                    if self.caves[m.row + r, m.col + c] == 0:
+                        squares.add((m.row + r, m.col + c))
+        print(squares)
+        return squares
+
+    # step closer to one of the enemies, if possible
+    def move_to_enemies(self, actor, attack_spots):
+        # TODO: actually move
+
+        pass
+
     def act(self, actor):
         targets = self.get_close_enemies(actor)
         if len(targets) > 0:
             self.attack_from_list(actor, targets)
         else:
-            # TODO: move to targets if possible
-
+            attack_spots = self.get_set_of_empty_squares_next_to_enemies(actor)
+            if len(attack_spots) == 0:
+                return
+            self.move_to_enemies(actor, attack_spots)
             targets = self.get_close_enemies(actor)
             if len(targets) > 0:
                 self.attack_from_list(actor, targets)
