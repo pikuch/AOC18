@@ -1,4 +1,5 @@
 # AOC18 day 15
+from cave import Cave
 
 
 def load_data(f_name):
@@ -8,5 +9,9 @@ def load_data(f_name):
 
 
 def run():
-    data = load_data("Day15.txt")
-
+    # data = load_data("Day15.txt")
+    data = load_data("Day15test0.txt")
+    cave = Cave(data)
+    cave.show()
+    cave.step()
+    cave.show()
