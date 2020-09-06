@@ -3,10 +3,10 @@ from collections import deque
 
 
 class Mob:
-    def __init__(self, tp, row, col):
+    def __init__(self, tp, ap, row, col):
         self.type = tp
         self.hp = 200  # health points
-        self.ap = 3  # attack points
+        self.ap = ap  # attack points
         self.row = row
         self.col = col
 
@@ -15,7 +15,7 @@ class Mob:
 
 
 class Cave:
-    def __init__(self, data):
+    def __init__(self, data, elf_ap):
         lines = data.split("\n")
         self.rounds = 0
         self.WALL = -1
@@ -24,6 +24,7 @@ class Cave:
         self.mobs = []
         self.elf_count = 0
         self.goblin_count = 0
+        self.elf_deaths = 0
         self.caves = np.zeros((len(lines), len(lines[0])), dtype=np.int32)
         for row in range(len(lines)):
             for col in range(len(lines[0])):
@@ -31,11 +32,11 @@ class Cave:
                     self.caves[row, col] = self.WALL
                 elif lines[row][col] == "E":
                     self.caves[row, col] = self.ELF
-                    self.mobs.append(Mob("E", row, col))
+                    self.mobs.append(Mob("E", elf_ap, row, col))
                     self.elf_count += 1
                 elif lines[row][col] == "G":
                     self.caves[row, col] = self.GOBLIN
-                    self.mobs.append(Mob("G", row, col))
+                    self.mobs.append(Mob("G", 3, row, col))
                     self.goblin_count += 1
 
     # return the mob at (row, col)
@@ -45,8 +46,8 @@ class Cave:
                 return mob
 
     def show(self):
-        _ = input()
-        print("\n" * 80)
+        # _ = input()
+        # print("\n" * 80)
         for row in range(self.caves.shape[0]):
             line_end = "    "
             for col in range(self.caves.shape[1]):
@@ -89,6 +90,7 @@ class Cave:
                 self.goblin_count -= 1
             else:
                 self.elf_count -= 1
+                self.elf_deaths += 1
         else:  # hurt, not kill
             weak_targets[0].hp -= actor.ap
 
@@ -174,7 +176,7 @@ class Cave:
             for m in self.mobs:
                 if m.hp:
                     if (m.type == "E" and self.goblin_count == 0) or (m.type == "G" and self.elf_count == 0):
-                        return self.rounds * sum([mob.hp for mob in self.mobs])
+                        return self.rounds * sum([mob.hp for mob in self.mobs]), self.elf_deaths
                     self.act(m)
             self.rounds += 1
-            self.show()
+            # self.show()
