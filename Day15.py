@@ -10,9 +10,8 @@ def load_data(f_name):
 
 def run():
     # data = load_data("Day15.txt")
-    data = load_data("Day15test0.txt")
+    data = load_data("Day15test5.txt")
     cave = Cave(data)
     cave.show()
     outcome = cave.run()
-    cave.show()
     print(f"The outcome is {outcome}")

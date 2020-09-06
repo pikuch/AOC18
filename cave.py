@@ -1,4 +1,5 @@
 import numpy as np
+from collections import deque
 
 
 class Mob:
@@ -40,11 +41,12 @@ class Cave:
     # return the mob at (row, col)
     def get_mob_at(self, row, col):
         for mob in self.mobs:
-            if mob.row == row and mob.col == col:
+            if mob.row == row and mob.col == col and mob.hp:
                 return mob
 
     def show(self):
-        # print("\n" * 80)
+        _ = input()
+        print("\n" * 80)
         for row in range(self.caves.shape[0]):
             line_end = "    "
             for col in range(self.caves.shape[1]):
@@ -90,7 +92,7 @@ class Cave:
         else:  # hurt, not kill
             weak_targets[0].hp -= actor.ap
 
-    # returns a set of all squares that are next to enemies
+    # return a set of all squares that are next to enemies
     def get_set_of_empty_squares_next_to_enemies(self, actor):
         enemy = "G" if actor.type == "E" else "E"
         squares = set()
@@ -99,15 +101,60 @@ class Cave:
                 for r, c in ((-1, 0), (0, -1), (0, 1), (1, 0)):
                     if self.caves[m.row + r, m.col + c] == 0:
                         squares.add((m.row + r, m.col + c))
-        print(squares)
         return squares
+
+    # get only the closest spots from the set
+    def get_closest_spots(self, start_row, start_col, spots):
+        closest_spots = []
+        closest_spot_distance = None
+        visited = set()
+        visited.add((start_row, start_col))
+        to_check = deque()
+        to_check.append((start_row, start_col, 0))
+        while len(to_check):
+            row, col, moves = to_check.popleft()
+            # check if it's one of the spots we are looking for
+            if (row, col) in spots:
+                spots.remove((row, col))
+                if len(closest_spots) == 0:  # the first found spot
+                    closest_spots.append((row, col))
+                    closest_spot_distance = moves
+                else:  # maybe a spot at the same distance
+                    if closest_spot_distance == moves:
+                        closest_spots.append((row, col))
+                    else:
+                        return closest_spots
+            # consider surrounding points
+            for r, c in ((-1, 0), (0, -1), (0, 1), (1, 0)):
+                if self.caves[row + r, col + c] == 0 and (row + r, col + c) not in visited:
+                    to_check.append((row + r, col + c, moves + 1))
+                    visited.add((row + r, col + c))
+
+        return closest_spots
 
     # step closer to one of the enemies, if possible
     def move_to_enemies(self, actor, attack_spots):
-        # TODO: actually move
+        closest_spots = self.get_closest_spots(actor.row, actor.col, attack_spots)
+        if len(closest_spots) == 0:
+            return
+        if len(closest_spots) > 1:
+            closest_spots.sort(key=lambda x: (x[0], x[1]))
+        destination = closest_spots[0]
+        # consider step options
+        step_options = []
+        for r, c in ((-1, 0), (0, -1), (0, 1), (1, 0)):
+            if self.caves[actor.row + r, actor.col + c] == 0:
+                step_options.append((actor.row + r, actor.col + c))
+        if len(step_options) > 1:
+            step_options = self.get_closest_spots(destination[0], destination[1], set(step_options))
+        if len(step_options) > 1:
+            step_options.sort(key=lambda x: (x[0], x[1]))
+        # finally move to step_options[0]
+        self.caves[actor.row, actor.col] = 0
+        actor.row, actor.col = step_options[0][0], step_options[0][1]
+        self.caves[actor.row, actor.col] = self.GOBLIN if actor.type == "G" else self.ELF
 
-        pass
-
+    # attack or move and attack
     def act(self, actor):
         targets = self.get_close_enemies(actor)
         if len(targets) > 0:
@@ -122,11 +169,12 @@ class Cave:
                 self.attack_from_list(actor, targets)
 
     def run(self):
-        while self.rounds < 1:  # TODO: while True
-            self.rounds += 1
+        while True:
             self.mobs.sort(key=lambda x: (x.row, x.col))
             for m in self.mobs:
                 if m.hp:
                     if (m.type == "E" and self.goblin_count == 0) or (m.type == "G" and self.elf_count == 0):
-                        return "No more enemies!"
+                        return self.rounds * sum([mob.hp for mob in self.mobs])
                     self.act(m)
+            self.rounds += 1
+            self.show()
