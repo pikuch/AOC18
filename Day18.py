@@ -70,10 +70,27 @@ def step(area):
     return new_area
 
 
+def resources_after_minutes(area, n):
+    seen = {}
+    i = 0
+    while i < n:
+        i += 1
+        area = step(area)
+        print(f"\rcalculating step {i} ", end="")
+        h = hash(area.tostring())
+        if h in seen:
+            period = i - seen[h]
+            i += period * ((n - i) // period)
+        else:
+            seen[h] = i
+
+    return np.sum(area == 1) * np.sum(area == 2)
+
+
 def run():
     data = load_data("Day18.txt").split("\n")
     area = parse_data(data)
-    for i in range(10):
-        area = step(area)
-    draw(area)
-    print(f"Resource value after 10 minutes is {np.sum(area==1) * np.sum(area==2)}")
+    res10 = resources_after_minutes(area, 10)
+    print(f"Resource value after 10 minutes is {res10}")
+    res1e9 = resources_after_minutes(area, 10**9)
+    print(f"Resource value after 1000000000 minutes is {res1e9}")
