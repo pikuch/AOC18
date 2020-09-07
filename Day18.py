@@ -71,7 +71,7 @@ def step(area):
 
 
 def run():
-    data = load_data("Day18test.txt").split("\n")
+    data = load_data("Day18.txt").split("\n")
     area = parse_data(data)
     for i in range(10):
         area = step(area)
