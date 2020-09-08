@@ -1,3 +1,9 @@
+def is_jump(linked, current):
+    if linked == current:
+        return " [JUMP]"
+    else:
+        return ""
+
 
 class DeviceV2:
     def __init__(self):
@@ -76,41 +82,40 @@ class DeviceV2:
         for i in range(len(self.program)):
             inst = self.program[i]
             if inst[0] == "addr":
-                translation.append(f"r{inst[3]} = r{inst[1]} + r{inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} + r{inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "addi":
-                translation.append(f"r{inst[3]} = r{inst[1]} + {inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} + {inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "mulr":
-                translation.append(f"r{inst[3]} = r{inst[1]} * r{inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} * r{inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "muli":
-                translation.append(f"r{inst[3]} = r{inst[1]} * {inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} * {inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "banr":
-                translation.append(f"r{inst[3]} = r{inst[1]} & r{inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} & r{inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "bani":
-                translation.append(f"r{inst[3]} = r{inst[1]} & {inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} & {inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "borr":
-                translation.append(f"r{inst[3]} = r{inst[1]} | r{inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} | r{inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "bori":
-                translation.append(f"r{inst[3]} = r{inst[1]} | {inst[2]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]} | {inst[2]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "setr":
-                translation.append(f"r{inst[3]} = r{inst[1]}")
+                translation.append(f"{i:02d}: r{inst[3]} = r{inst[1]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "seti":
-                translation.append(f"r{inst[3]} = {inst[1]}")
+                translation.append(f"{i:02d}: r{inst[3]} = {inst[1]}{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "gtir":
-                translation.append(f"IF {inst[1]} > r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+                translation.append(f"{i:02d}: IF {inst[1]} > r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "gtri":
-                translation.append(f"IF r{inst[1]} > {inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+                translation.append(f"{i:02d}: IF r{inst[1]} > {inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "gtrr":
-                translation.append(f"IF r{inst[1]} > r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+                translation.append(f"{i:02d}: IF r{inst[1]} > r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "eqir":
-                translation.append(f"IF {inst[1]} == r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+                translation.append(f"{i:02d}: IF {inst[1]} == r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "eqri":
-                translation.append(f"IF r{inst[1]} == {inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+                translation.append(f"{i:02d}: IF r{inst[1]} == {inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0{is_jump(self.pc_link, inst[3])}")
             elif inst[0] == "eqrr":
-                translation.append(f"IF r{inst[1]} == r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+                translation.append(f"{i:02d}: IF r{inst[1]} == r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0{is_jump(self.pc_link, inst[3])}")
             else:
-                translation.append(f"UNKNOWN INSTRUCTION: {str(inst)}")
+                translation.append(f"{i:02d}: UNKNOWN INSTRUCTION: {str(inst)}")
         return translation
-
 
     def run(self):
         while 0 <= self.pc < len(self.program):
