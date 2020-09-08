@@ -12,3 +12,5 @@ def run():
     data = load_data("Day19.txt")
     device = DeviceV2()
     device.load(data)
+    device.run()
+    print(f"Register 0 after the run: {device.reg[0]}")

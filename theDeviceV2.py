@@ -3,14 +3,15 @@ class DeviceV2:
     def __init__(self):
         self.reg = [0] * 6
         self.pc = 0
+        self.pc_link = None
         self.program = []
-        self.ops = {15: self.addr, 4: self.addi,
-                    6: self.mulr, 5: self.muli,
-                    11: self.banr, 8: self.bani,
-                    12: self.borr, 10: self.bori,
-                    2: self.setr, 0: self.seti,
-                    3: self.gtir, 9: self.gtri, 7: self.gtrr,
-                    1: self.eqir, 13: self.eqri, 14: self.eqrr}
+        self.ops = {"addr": self.addr, "addi": self.addi,
+                    "mulr": self.mulr, "muli": self.muli,
+                    "banr": self.banr, "bani": self.bani,
+                    "borr": self.borr, "bori": self.bori,
+                    "setr": self.setr, "seti": self.seti,
+                    "gtir": self.gtir, "gtri": self.gtri, "gtrr": self.gtrr,
+                    "eqir": self.eqir, "eqri": self.eqri, "eqrr": self.eqrr}
 
     def addr(self, inst):
         self.reg[inst[3]] = self.reg[inst[1]] + self.reg[inst[2]]
@@ -62,8 +63,18 @@ class DeviceV2:
 
     def load(self, program):
         for line in program.split("\n"):
-            self.program.append(tuple(map(int, line.split())))
+            words = line.split()
+            if words[0] == "#ip":
+                self.pc_link = int(words[1])
+            else:
+                for i in range(1, len(words)):
+                    words[i] = int(words[i])
+                self.program.append(words)
 
     def run(self):
-        for inst in self.program:
+        while 0 <= self.pc < len(self.program):
+            inst = self.program[self.pc]
+            self.reg[self.pc_link] = self.pc
             self.ops[inst[0]](inst)
+            self.pc = self.reg[self.pc_link]
+            self.pc += 1
