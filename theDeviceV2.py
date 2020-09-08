@@ -71,6 +71,47 @@ class DeviceV2:
                     words[i] = int(words[i])
                 self.program.append(words)
 
+    def translate(self):
+        translation = [f"pc = r{self.pc_link}"]
+        for i in range(len(self.program)):
+            inst = self.program[i]
+            if inst[0] == "addr":
+                translation.append(f"r{inst[3]} = r{inst[1]} + r{inst[2]}")
+            elif inst[0] == "addi":
+                translation.append(f"r{inst[3]} = r{inst[1]} + {inst[2]}")
+            elif inst[0] == "mulr":
+                translation.append(f"r{inst[3]} = r{inst[1]} * r{inst[2]}")
+            elif inst[0] == "muli":
+                translation.append(f"r{inst[3]} = r{inst[1]} * {inst[2]}")
+            elif inst[0] == "banr":
+                translation.append(f"r{inst[3]} = r{inst[1]} & r{inst[2]}")
+            elif inst[0] == "bani":
+                translation.append(f"r{inst[3]} = r{inst[1]} & {inst[2]}")
+            elif inst[0] == "borr":
+                translation.append(f"r{inst[3]} = r{inst[1]} | r{inst[2]}")
+            elif inst[0] == "bori":
+                translation.append(f"r{inst[3]} = r{inst[1]} | {inst[2]}")
+            elif inst[0] == "setr":
+                translation.append(f"r{inst[3]} = r{inst[1]}")
+            elif inst[0] == "seti":
+                translation.append(f"r{inst[3]} = {inst[1]}")
+            elif inst[0] == "gtir":
+                translation.append(f"IF {inst[1]} > r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+            elif inst[0] == "gtri":
+                translation.append(f"IF r{inst[1]} > {inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+            elif inst[0] == "gtrr":
+                translation.append(f"IF r{inst[1]} > r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+            elif inst[0] == "eqir":
+                translation.append(f"IF {inst[1]} == r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+            elif inst[0] == "eqri":
+                translation.append(f"IF r{inst[1]} == {inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+            elif inst[0] == "eqrr":
+                translation.append(f"IF r{inst[1]} == r{inst[2]} THEN r{inst[3]} = 1 ELSE r{inst[3]} = 0")
+            else:
+                translation.append(f"UNKNOWN INSTRUCTION: {str(inst)}")
+        return translation
+
+
     def run(self):
         while 0 <= self.pc < len(self.program):
             inst = self.program[self.pc]

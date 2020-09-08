@@ -10,7 +10,13 @@ def load_data(f_name):
 
 def run():
     data = load_data("Day19.txt")
+    # device = DeviceV2()
+    # device.load(data)
+    # device.run()
+    # print(f"Register 0 after the run: {device.reg[0]}")
+
     device = DeviceV2()
     device.load(data)
-    device.run()
-    print(f"Register 0 after the run: {device.reg[0]}")
+    device.reg[0] = 1
+    for line in device.translate():
+        print(line)
