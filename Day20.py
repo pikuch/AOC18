@@ -29,10 +29,10 @@ def make_rooms(re):
             moves += 1
             if (x, y) not in rooms:
                 rooms[(x, y)] = moves
+                if moves >= 1000:
+                    at_least_1k += 1
             else:
                 moves = rooms[(x, y)]
-            if moves >= 1000:
-                at_least_1k += 1
             if moves > max_moves:
                 max_moves = moves
 
@@ -48,4 +48,4 @@ def run():
     # data = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$"  # result == 23
     # data = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"  # result == 31
     rooms, max_dist, at_least_1k = make_rooms(data)
-    print(f"The most distant room is {max_dist} doors away")
+    print(f"The most distant room is {max_dist} doors away and there are {at_least_1k} rooms at least 1000 doors away")
