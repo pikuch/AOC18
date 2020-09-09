@@ -118,8 +118,20 @@ class DeviceV2:
         return translation
 
     def run(self):
+        reg_1_values = set()
+        last_reg_1 = 0
+
         while 0 <= self.pc < len(self.program):
             inst = self.program[self.pc]
+            if inst[0] == "eqrr":
+                print(f"\r{len(reg_1_values)}", end="")
+                if self.reg[1] in reg_1_values:
+                    print(last_reg_1)
+                    break
+                else:
+                    reg_1_values.add(self.reg[1])
+                    last_reg_1 = self.reg[1]
+
             self.reg[self.pc_link] = self.pc
             self.ops[inst[0]](inst)
             self.pc = self.reg[self.pc_link]
