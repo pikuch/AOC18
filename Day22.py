@@ -71,9 +71,9 @@ def parse_data(data):
 
 
 def run():
-    data = load_data("Day22test.txt")
+    data = load_data("Day22.txt")
     depth, target_x, target_y = parse_data(data)
     cave_map = CaveMap(depth, target_x, target_y)
     cave_map.generate()
-    cave_map.show()
+    # cave_map.show()
     print(f"The risk level of the area from the entrance to the target is {cave_map.get_risk_level()}")
