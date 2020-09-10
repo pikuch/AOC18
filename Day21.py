@@ -1,5 +1,5 @@
 # AOC18 day 21
-from theDeviceV2 import DeviceV2
+from theDeviceV2_catch_eq import DeviceV2_catch_eq
 
 
 def load_data(f_name):
@@ -10,23 +10,10 @@ def load_data(f_name):
 
 def run():
     data = load_data("Day21.txt")
-    device = DeviceV2()
+    device = DeviceV2_catch_eq()
     device.load(data)
     device.run()
-    # part 1:
-    # 11592302 - found by catching the eqrr 1 0 5 instruction
-    # part 2:
-
-
-    # in the device:
-    # reg_1_values = set()
-    # last_reg_1 = 0
-    #
-    #     if inst[0] == "eqrr":
-    #         print(f"\r{len(reg_1_values)}", end="")
-    #         if self.reg[1] in reg_1_values:
-    #             print(last_reg_1)
-    #             break
-    #         else:
-    #             reg_1_values.add(self.reg[1])
-    #             last_reg_1 = self.reg[1]
+    # the result:
+    # The first value is 11592302
+    # looking for a cycle... 15600
+    # The last stopping value is 313035
