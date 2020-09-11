@@ -1,5 +1,6 @@
 # AOC18 day 22
 from collections import deque
+import numpy as np
 
 
 class CaveMap:
@@ -7,15 +8,13 @@ class CaveMap:
         self.depth = depth
         self.target_x = target_x
         self.target_y = target_y
-        self.max_x = target_x + 5
-        self.max_y = target_y + 5
-        self.erosion = {}
-        self.types = {}
-        self.distance = {}
+        self.max_x = 100+round(1.5 * max(target_x, target_y))
+        self.max_y = 100+round(1.5 * max(target_x, target_y))
+        self.erosion = np.zeros((self.max_x, self.max_y), dtype=np.uint32)
+        self.type = np.zeros((self.max_x, self.max_y), dtype=np.uint8)
+        self.dist = np.full((self.max_x, self.max_y, 3), 9**9, dtype=np.uint32)
 
     def get_erosion_at(self, x, y):
-        if (x, y) in self.erosion:
-            return self.erosion[(x, y)]
         if x == 0 and y == 0:
             geologic_index = 0
         elif x == self.target_x and y == self.target_y:
@@ -25,10 +24,9 @@ class CaveMap:
         elif x == 0:
             geologic_index = y * 48271
         else:
-            geologic_index = self.get_erosion_at(x-1, y) * self.get_erosion_at(x, y-1)
-        self.erosion[(x, y)] = (geologic_index + self.depth) % 20183
-        self.types[(x, y)] = self.erosion[(x, y)] % 3
-        return self.erosion[(x, y)]
+            geologic_index = self.erosion[x - 1, y] * self.erosion[x, y - 1]
+        self.erosion[x, y] = (geologic_index + self.depth) % 20183
+        self.type[x, y] = self.erosion[x, y] % 3
 
     def generate(self):
         for x in range(self.max_x):
@@ -40,70 +38,56 @@ class CaveMap:
             for x in range(self.max_x):
                 if x == self.target_x and y == self.target_y:
                     print("T", end="")
-                elif (x, y) in self.erosion:
-                    region = self.types[(x, y)]
+                else:
+                    region = self.type[x, y]
                     if region == 0:
                         print(".", end="")
                     elif region == 1:
                         print("=", end="")
                     elif region == 2:
                         print("|", end="")
-                else:
-                    print("?", end="")
             print("")
 
     def get_risk_level(self):
         risk = 0
-        for y in range(self.target_y+1):
-            for x in range(self.target_x+1):
-                risk += self.types[(x, y)]
+        for y in range(self.target_y + 1):
+            for x in range(self.target_x + 1):
+                risk += self.type[x, y]
+        assert risk == np.sum(self.type[:self.target_x + 1, :self.target_y + 1])
         return risk
 
     def get_time_to_target(self):
-        possible_tools = {0: (1, 2), 1: (0, 2), 2: (0, 1)}
-        possible_tool2 = {(0, 1): 2, (1, 0): 2, (0, 2): 1, (2, 0): 1, (1, 2): 0, (2, 1): 0}
         dx = {"N": 0, "S": 0, "E": 1, "W": -1}
         dy = {"N": -1, "S": 1, "E": 0, "W": 0}
-        self.distance[(0, 0)] = [9**9, 9**9, 9**9]
+        self.dist[0, 0, 1] = 0
         to_check = deque()
         to_check.append((0, 0, 1, 0))  # x, y, tool, minutes
-        min_minutes = 9**9
         while len(to_check):
             x, y, tool, minutes = to_check.popleft()
-            if minutes > min_minutes:  # longer than already found
+            if self.dist[x, y, tool] < minutes:
                 continue
-            if (x, y) in self.distance:  # already visited
-                faster_paths = 0
-                for t in possible_tools[self.types[(x, y)]]:
-                    dist = minutes if t == tool else minutes + 7
-                    if dist < self.distance[(x, y)][t]:
-                        self.distance[(x, y)][t] = dist
-                        faster_paths += 1
-                if faster_paths == 0:
-                    continue
-            else:
-                self.distance[(x, y)] = [-1, -1, -1]
-                for t in possible_tools[self.types[(x, y)]]:
-                    self.distance[(x, y)][t] = minutes if t == tool else minutes + 7
-            if x == self.target_x and y == self.target_y:
-                if tool == 1 and minutes < min_minutes:
-                    min_minutes = minutes
-                elif minutes + 7 < min_minutes:
-                    min_minutes = minutes + 7
+            print(f"\rdistance: {x + y}, paths to check: {len(to_check)}", end="")
+            if x == self.target_x and y == self.target_y and tool == 1:
+                continue
+            if minutes >= self.dist[self.target_x, self.target_y, 1]:
+                continue
             # go in 4 directions
             for direction in "NWSE":
                 new_x = x + dx[direction]
                 new_y = y + dy[direction]
                 if new_x < 0 or new_y < 0:
                     continue
-                if (new_x, new_y) not in self.types:
-                    self.get_erosion_at(new_x, new_y)
-                new_type = self.types[(new_x, new_y)]
-                if tool != new_type:  # can go without switching
+                if tool != self.type[new_x, new_y] and minutes + 1 < self.dist[new_x, new_y, tool]:
+                    self.dist[new_x, new_y, tool] = minutes + 1
                     to_check.append((new_x, new_y, tool, minutes + 1))
-                else:
-                    to_check.append((new_x, new_y, possible_tool2[(self.types[(x, y)], new_type)], minutes + 8))
-        return min_minutes
+            # change equipment
+            new_tool = (~ (tool | self.type[x, y])) & 3
+            if minutes + 7 < self.dist[x, y, new_tool]:
+                self.dist[x, y, new_tool] = minutes + 7
+                to_check.append((x, y, new_tool, minutes + 7))
+
+        print(" done!")
+        return self.dist[self.target_x, self.target_y, 1]
 
 
 def load_data(f_name):
@@ -121,9 +105,10 @@ def parse_data(data):
 
 
 def run():
-    data = load_data("Day22test.txt")
+    data = load_data("Day22.txt")
     depth, target_x, target_y = parse_data(data)
     cave_map = CaveMap(depth, target_x, target_y)
+    print("Preparing the grid...")
     cave_map.generate()
     # cave_map.show()
     print(f"The risk level of the area from the entrance to the target is {cave_map.get_risk_level()}")
