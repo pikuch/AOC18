@@ -59,28 +59,82 @@ def count_in_range_of_point(x, y, z, nanobots):
     return in_range
 
 
+def remove_values(val, counts):
+    to_remove = []
+    for item in counts:
+        if item[3] == val:
+            to_remove.append(item)
+    for item in to_remove:
+        counts.remove(item)
+
+
+def find_center(counts):
+    xx, yy, zz = 0, 0, 0
+    n = 0
+    for point in counts:
+        xx += point[0] * point[3]
+        yy += point[1] * point[3]
+        zz += point[2] * point[3]
+        n += point[3]
+    xx //= n
+    yy //= n
+    zz //= n
+    return xx, yy, zz
+
+
+def remove_below_max(counts):
+    max_bots = 0
+    for point in counts:
+        if point[3] > max_bots:
+            max_bots = point[3]
+    to_remove = []
+    for item in counts:
+        if item[3] < max_bots:
+            to_remove.append(item)
+    for item in to_remove:
+        counts.remove(item)
+
+
 def find_best_spot_distance(nanobots):
     base_x, base_y, base_z = 0, 0, 0
-    for exponent in reversed(range(10)):
+    range_x, range_y, range_z = 9**9, 9**9, 9**9
+    last_max = [0, 0, 0, 0]
+    while range_x + range_y + range_z > 1:
         counts = []
         for x, y, z in product(range(-5, 5), range(-5, 5), range(-5, 5)):
-            bots_in_range = count_in_range_of_point(base_x + x * 10**exponent, base_y + y * 10**exponent, base_z + z * 10**exponent, nanobots)
-            counts.append((x, y, z, bots_in_range))
-        counts.sort(key=lambda a: a[3], reverse=True)
-        best_sector = counts[0]
-        base_x += best_sector[0] * 10**exponent
-        base_y += best_sector[1] * 10**exponent
-        base_z += best_sector[2] * 10**exponent
-        print(base_x, base_y, base_z)
+            bots_in_range = count_in_range_of_point(base_x + x * range_x//10,
+                                                    base_y + y * range_y//10,
+                                                    base_z + z * range_z//10,
+                                                    nanobots)
+            counts.append((base_x + x * range_x//10,
+                           base_y + y * range_y//10,
+                           base_z + z * range_z//10,
+                           bots_in_range))
+        remove_below_max(counts)
+        if counts[0][3] < last_max[3]:
+            counts = [last_max]
 
+        if len(counts):
+            base_x, base_y, base_z = find_center(counts)
+
+        range_x = round(range_x * 0.9 - 1)
+        range_y = round(range_y * 0.9 - 1)
+        range_z = round(range_z * 0.9 - 1)
+
+        last_max = sorted(counts, key=lambda a: a[0]+a[1]+a[2])[0]
+
+        print(f"\rcurrent location: {base_x}, {base_y}, {base_z}  current search range: {range_x}, {range_y}, {range_z}", end="")
+
+    print("")
     return distance((0, 0, 0), (base_x, base_y, base_z))
 
 
 def run():
-    data = load_data("Day23test.txt")
+    data = load_data("Day23.txt")
     nanobots = get_nanobots(data)
     strongest = find_strongest(nanobots)
     in_range = count_in_range_of_bot(strongest, nanobots)
     print(f"The number of nanobots in range of the strongest nanobot is {in_range}")
     dist = find_best_spot_distance(nanobots)
     print(f"The manhattan distance to the closest spot with optimal reach is {dist}")
+    # (52018071, 47441514, 24816518, 918) -> 124276103
