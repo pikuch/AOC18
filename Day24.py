@@ -1,4 +1,5 @@
 # AOC18 day 24
+from infection import Infection
 
 
 def load_data(f_name):
@@ -8,5 +9,8 @@ def load_data(f_name):
 
 
 def run():
-    data = load_data("Day24.txt")
+    data = load_data("Day24test.txt")
+    infection = Infection()
+    infection.load_data(data)
+    infection.run()
 
