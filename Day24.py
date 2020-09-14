@@ -12,5 +12,5 @@ def run():
     data = load_data("Day24test.txt")
     infection = Infection()
     infection.load_data(data)
-    infection.run()
-
+    outcome_immune, outcome_infection = infection.run()
+    print(f"The immune system is left with {outcome_immune} units while the infection has {outcome_infection}")

@@ -79,10 +79,11 @@ class Infection:
             damage = attacker.count * attacker.attack
             if attacker.attack_type in defender.weak:
                 damage *= 2
-        kill_count = damage / defender.hp
+        kill_count = damage // defender.hp
+        if defender.count - kill_count < 0:
+            kill_count = defender.count
         defender.count -= kill_count
-        if defender.count < 0:
-            defender.count = 0
+        # print(f" killed {kill_count},", end="")
 
     def run(self):
         while self.get_army_units(0) and self.get_army_units(1):
@@ -98,6 +99,6 @@ class Infection:
             # attack phase
             fights.sort(key=lambda a: a[0].initiative, reverse=True)
             for attacker, defender in fights:
-                if attacker.count:
+                if attacker.count and defender is not None:
                     self.solve_attack(attacker, defender)
-
+        return self.get_army_units(0), self.get_army_units(1)
