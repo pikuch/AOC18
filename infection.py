@@ -1,12 +1,12 @@
 
 class Group:
-    def __init__(self, description, current_side, side_counter):
+    def __init__(self, description, current_side, side_counter, boost):
         words = description.split()
         self.army = current_side
         self.name = "ImSys" + str(side_counter) if current_side == 0 else "Infec" + str(side_counter)
         self.count = int(words[0])
         self.hp = int(words[4])
-        self.attack = int(words[-6])
+        self.attack = int(words[-6]) + boost * (1 - current_side)
         self.attack_type = words[-5]
         self.initiative = int(words[-1])
         self.weak = []
@@ -32,7 +32,7 @@ class Infection:
     def __init__(self):
         self.groups = []
 
-    def load_data(self, data):
+    def load_data(self, data, boost):
         lines = data.split("\n")
         current_side = 0
         side_counter = [0] * 2
@@ -46,7 +46,7 @@ class Infection:
             if line == "":
                 continue
             side_counter[current_side] += 1
-            self.groups.append(Group(line, current_side, side_counter[current_side]))
+            self.groups.append(Group(line, current_side, side_counter[current_side], boost))
 
     def get_army_units(self, n):
         counter = 0
@@ -91,9 +91,13 @@ class Infection:
             kill_count = defender.count
         defender.count -= kill_count
         # print(f"{attacker.name} attacks {defender.name} killing {kill_count}")
+        return kill_count
 
     def run(self):
-        while self.get_army_units(0) and self.get_army_units(1):
+        killed_this_round = 1
+        while self.get_army_units(0) and self.get_army_units(1) and killed_this_round:
+
+            killed_this_round = 0
 
             # target selection phase
             attackers = [group for group in self.groups if group.count > 0]
@@ -108,6 +112,6 @@ class Infection:
             fights.sort(key=lambda a: a[0].initiative, reverse=True)
             for attacker, defender in fights:
                 if attacker.count and defender is not None:
-                    self.solve_attack(attacker, defender)
+                    killed_this_round += self.solve_attack(attacker, defender)
 
         return self.get_army_units(0), self.get_army_units(1)
