@@ -1,13 +1,14 @@
 
 class Group:
-    def __init__(self, description, current_side):
+    def __init__(self, description, current_side, side_counter):
         words = description.split()
         self.army = current_side
+        self.name = "ImSys" + str(side_counter) if current_side == 0 else "Infec" + str(side_counter)
         self.count = int(words[0])
         self.hp = int(words[4])
         self.attack = int(words[-6])
         self.attack_type = words[-5]
-        self.initiative = words[-1]
+        self.initiative = int(words[-1])
         self.weak = []
         self.immune = []
         self.chosen = False
@@ -34,6 +35,7 @@ class Infection:
     def load_data(self, data):
         lines = data.split("\n")
         current_side = 0
+        side_counter = [0] * 2
         for line in lines:
             if line == "Immune System:":
                 current_side = 0
@@ -43,7 +45,8 @@ class Infection:
                 continue
             if line == "":
                 continue
-            self.groups.append(Group(line, current_side))
+            side_counter[current_side] += 1
+            self.groups.append(Group(line, current_side, side_counter[current_side]))
 
     def get_army_units(self, n):
         counter = 0
@@ -62,8 +65,12 @@ class Infection:
 
     # choose a suitable target from enemies
     def choose_target(self, attacker):
-        targets = [group for group in self.groups if group.count and group.army != attacker.army and not group.chosen]
+        targets = [group for group in self.groups if group.count > 0 and group.army != attacker.army and not group.chosen]
         targets.sort(key=lambda a: (self.get_damage(attacker, a), a.count * a.attack, a.initiative), reverse=True)
+
+        # for t in targets:
+        #     print(f"{attacker.name} would deal {t.name} {self.get_damage(attacker, t)} damage")
+
         if len(targets) == 0:
             return None
         if self.get_damage(attacker, targets[0]) == 0:
@@ -83,12 +90,13 @@ class Infection:
         if defender.count - kill_count < 0:
             kill_count = defender.count
         defender.count -= kill_count
-        # print(f" killed {kill_count},", end="")
+        # print(f"{attacker.name} attacks {defender.name} killing {kill_count}")
 
     def run(self):
         while self.get_army_units(0) and self.get_army_units(1):
+
             # target selection phase
-            attackers = [group for group in self.groups if group.count]
+            attackers = [group for group in self.groups if group.count > 0]
             attackers.sort(key=lambda a: (a.count * a.attack, a.initiative), reverse=True)
             fights = []
             for group in self.groups:   # reset chosen groups
@@ -101,4 +109,5 @@ class Infection:
             for attacker, defender in fights:
                 if attacker.count and defender is not None:
                     self.solve_attack(attacker, defender)
+
         return self.get_army_units(0), self.get_army_units(1)

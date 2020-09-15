@@ -9,8 +9,9 @@ def load_data(f_name):
 
 
 def run():
-    data = load_data("Day24test.txt")
+    data = load_data("Day24.txt")
     infection = Infection()
     infection.load_data(data)
     outcome_immune, outcome_infection = infection.run()
     print(f"The immune system is left with {outcome_immune} units while the infection has {outcome_infection}")
+    # 14005 too high
