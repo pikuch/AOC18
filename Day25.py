@@ -47,9 +47,9 @@ def make_constellations(points):
 
 
 def run():
-    data = load_data("Day25test3.txt")
+    data = load_data("Day25.txt")
     points = parse_points(data)
     constellations = make_constellations(points)
     print(f"There are {len(constellations)} constellations!")
-    for c in constellations:
-        print(c)
+    # for c in constellations:
+    #     print(c)
